@@ -1,0 +1,404 @@
+{
+  "name": "main work flow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3405c1ab-310a-474d-b010-2383bdebfd73",
+              "name": "sender_email",
+              "value": "={{$json.from.value[0].address}}",
+              "type": "string"
+            },
+            {
+              "id": "29c0b2e4-60ce-4d02-b078-f94919836be4",
+              "name": "subject",
+              "value": "={{$json.subject}}",
+              "type": "string"
+            },
+            {
+              "id": "ab97ce9d-2c0d-4d7f-bc5e-bcd2abd992a6",
+              "name": "body",
+              "value": "={{$json.text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        352
+      ],
+      "id": "e91d2328-af1c-4e65-96f1-d96f9264ac15",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json.choices[0].message.content;\n\n// Remove markdown if AI returns ```json ... ```\nconst cleaned = response\n  .replace(/```json/gi, \"\")\n  .replace(/```/g, \"\")\n  .trim();\n\n// Parse JSON\nconst data = JSON.parse(cleaned);\n\n// -------------------------\n// CATEGORY\n// -------------------------\ndata.category = String(data.category || \"\")\n  .replace(/\\u00A0/g, \" \")\n  .replace(/\\s+/g, \" \")\n  .trim()\n  .toUpperCase();\n\nconst categoryMap = {\n  TECHNICAL: \"TECHNICAL\",\n  BILLING: \"BILLING\",\n  ACCOUNT: \"ACCOUNT\",\n  GENERAL: \"GENERAL\",\n  OTHER: \"OTHER\",\n};\n\ndata.category = categoryMap[data.category] || \"OTHER\";\n\n// -------------------------\n// ASSIGNED TEAM\n// -------------------------\nconst teamMap = {\n  TECHNICAL: \"TECHNICAL SUPPORT\",\n  BILLING: \"BILLING\",\n  ACCOUNT: \"GENERAL SUPPORT\",\n  GENERAL: \"GENERAL SUPPORT\",\n  OTHER: \"GENERAL SUPPORT\",\n};\n\ndata.assigned_team = teamMap[data.category];\n\n// Remove hidden spaces\ndata.assigned_team = data.assigned_team\n  .replace(/\\u00A0/g, \" \")\n  .replace(/\\s+/g, \" \")\n  .trim();\n\n// -------------------------\n// PRIORITY\n// -------------------------\ndata.priority = String(data.priority || \"Medium\")\n  .trim()\n  .toLowerCase();\n\nif (data.priority === \"high\") data.priority = \"High\";\nelse if (data.priority === \"low\") data.priority = \"Low\";\nelse data.priority = \"Medium\";\n\n// -------------------------\n// SENTIMENT\n// -------------------------\ndata.sentiment = String(data.sentiment || \"Neutral\")\n  .trim()\n  .toLowerCase();\n\nif (data.sentiment === \"positive\") data.sentiment = \"Positive\";\nelse if (data.sentiment === \"negative\") data.sentiment = \"Negative\";\nelse data.sentiment = \"Neutral\";\n\n// -------------------------\n// STATUS\n// -------------------------\ndata.status = \"Open\";\n\n// -------------------------\n// SUMMARY\n// -------------------------\ndata.summary = String(data.summary || \"\").trim();\n\n// -------------------------\n// TAGS\n// -------------------------\nif (!Array.isArray(data.tags)) {\n  data.tags = [];\n}\n\n// Trim all tags\ndata.tags = data.tags.map(tag => String(tag).trim());\n\n// -------------------------\n// RETURN\n// -------------------------\nreturn [\n  {\n    json: data,\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -16
+      ],
+      "id": "8fbeaede-ec37-4176-8273-8e78d8bdd964",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appWfAWelLxDbcUC0",
+          "mode": "list",
+          "cachedResultName": "coustomer support ticket ",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblP4TI6t5UrGR1zY",
+          "mode": "list",
+          "cachedResultName": "tickets",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0/tblP4TI6t5UrGR1zY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ticket ID": "={{ Date.now().toString() }}",
+            "Customer Name": "={{$node[\"Gmail Trigger\"].json[\"from\"].value[0].name}}",
+            "Sender Email": "={{$node[\"Edit Fields\"].json.sender_email}}",
+            "Email Subject": "={{$node[\"Edit Fields\"].json.subject}}",
+            "Email Body": "={{$node[\"Edit Fields\"].json.body}}",
+            "category": "={{$json.category}}",
+            "Status": "=Open",
+            "Assigned Team": "={{$json.assigned_team}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ticket ID",
+              "displayName": "Ticket ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Subject",
+              "displayName": "Email Subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Body",
+              "displayName": "Email Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "TECHNICAL",
+                  "value": "TECHNICAL"
+                },
+                {
+                  "name": "BILLING",
+                  "value": "BILLING"
+                },
+                {
+                  "name": "ACCOUNT",
+                  "value": "ACCOUNT"
+                },
+                {
+                  "name": "GENERAL",
+                  "value": "GENERAL"
+                },
+                {
+                  "name": "OTHER",
+                  "value": "OTHER"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned Team",
+              "displayName": "Assigned Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Open",
+                  "value": "Open"
+                },
+                {
+                  "name": "In Progress",
+                  "value": "In Progress"
+                },
+                {
+                  "name": "Ressolved",
+                  "value": "Ressolved"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Received At",
+              "displayName": "Received At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1232,
+        272
+      ],
+      "id": "2301f667-8f58-44ec-8d53-fc1457e1a8a6",
+      "name": "Create a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qpzOwFTqsBhsQrmz",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "sender": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        304,
+        176
+      ],
+      "id": "4dbe0b7d-b9d1-4815-81e3-31595093a85b",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dKJGZjhTfDXzBhVJ",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{$node[\"Edit Fields\"].json.sender_email}}",
+        "subject": "=Ticket Received - {{$node[\"Create a record\"].json.fields[\"Ticket ID\"]}}",
+        "message": "=Hello {{$node[\"Gmail Trigger\"].json.from.value[0].name}},<br><br>\n\nYour support ticket has been created successfully.<br><br>\n\n<b>Ticket ID:</b> {{$node[\"Create a record\"].json.fields[\"Ticket ID\"]}}<br>\n<b>Category:</b> {{$node[\"Code in JavaScript\"].json.category}}<br>\n<b>Assigned Team:</b> {{$node[\"Code in JavaScript\"].json.assigned_team}}<br>\n<b>Status:</b> {{$node[\"Code in JavaScript\"].json.status}}<br><br>\n\nWe will contact you soon.<br><br>\n\nThanks,<br>\nSupport Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        176
+      ],
+      "id": "d89badc2-408e-4e51-8264-b847f3b2cadf",
+      "name": "Send a message",
+      "webhookId": "14053685-1896-47bf-a9bd-4b266237a8d6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dKJGZjhTfDXzBhVJ",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "YOUR_OPENROUTER_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://localhost"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/gemini-2.5-flash\",\n  \"temperature\": 0.2,\n  \"max_tokens\": 500,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are an AI customer support ticket analyzer. Return ONLY raw JSON with category, priority, sentiment, assigned_team, summary, status and tags.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Subject: {{$json.subject}} | Body: {{$json.body.replace(/\\n/g,' ')}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        800,
+        176
+      ],
+      "id": "f2554bf6-ac44-466d-9458-c4e3dfc0d7b6",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a record": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "238810c0-7576-452b-8880-1114f9ae3139",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "780088bc3c85c24431cefbee01ff7615e134301b08b5665be7c2dd214889ba6a"
+  },
+  "nodeGroups": [],
+  "id": "ad60NQNXdHARGLXC",
+  "tags": []
+}

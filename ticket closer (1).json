@@ -1,0 +1,341 @@
+{
+  "name": "ticket closer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "aa9a9234-4f2f-40c1-93bd-6bd245769d11",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appWfAWelLxDbcUC0",
+          "mode": "list",
+          "cachedResultName": "coustomer support ticket ",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblP4TI6t5UrGR1zY",
+          "mode": "list",
+          "cachedResultName": "tickets",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0/tblP4TI6t5UrGR1zY"
+        },
+        "filterByFormula": "AND( {Status}=\"Closed\", {Email Sent}=BLANK() )",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -160
+      ],
+      "id": "868d286a-163e-4f6d-8278-1bfd96dc3c7b",
+      "name": "Search records",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qpzOwFTqsBhsQrmz",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.fields[\"Sender Email\"] }}\n",
+        "subject": "={{ \"Your Ticket \" + $json.fields[\"Ticket ID\"] + \" has been Resolved\" }}",
+        "message": "=Hello {{ $json.fields[\"Customer Name\"] }},  Your support ticket has been successfully resolved.  Ticket ID: {{ $json.fields[\"Ticket ID\"] }} Assigned Team: {{ $json.fields[\"Assigned Team\"] }}  Thank you for contacting us.  Regards, Customer Support Team. If any query just reply to this e mail .Thanks for contacting Aniket PVT LTD",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        32
+      ],
+      "id": "e45602bf-7f03-4e4e-b3ec-9bfcd59d6ab3",
+      "name": "Send a message",
+      "webhookId": "674a7d4f-8db4-41af-ad8e-874c2e4f3f70",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dKJGZjhTfDXzBhVJ",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appWfAWelLxDbcUC0",
+          "mode": "list",
+          "cachedResultName": "coustomer support ticket ",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblP4TI6t5UrGR1zY",
+          "mode": "list",
+          "cachedResultName": "tickets",
+          "cachedResultUrl": "https://airtable.com/appWfAWelLxDbcUC0/tblP4TI6t5UrGR1zY"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Sent": true,
+            "Ticket ID": "={{ $('Search records').item.json.fields['Ticket ID'] }}"
+          },
+          "matchingColumns": [
+            "Ticket ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Ticket ID",
+              "displayName": "Ticket ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Sender Email",
+              "displayName": "Sender Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Subject",
+              "displayName": "Email Subject",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email Body",
+              "displayName": "Email Body",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "TECHNICAL",
+                  "value": "TECHNICAL"
+                },
+                {
+                  "name": "BILLING",
+                  "value": "BILLING"
+                },
+                {
+                  "name": "ACCOUNT",
+                  "value": "ACCOUNT"
+                },
+                {
+                  "name": "GENERAL",
+                  "value": "GENERAL"
+                },
+                {
+                  "name": "OTHER",
+                  "value": "OTHER"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Assigned Team",
+              "displayName": "Assigned Team",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Open",
+                  "value": "Open"
+                },
+                {
+                  "name": "In Progress",
+                  "value": "In Progress"
+                },
+                {
+                  "name": "Ressolved",
+                  "value": "Ressolved"
+                },
+                {
+                  "name": "Closed",
+                  "value": "Closed"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Received At",
+              "displayName": "Received At",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Email Sent",
+              "displayName": "Email Sent",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "b645668c-9c23-4949-aabf-29d8f57e9144",
+      "name": "Update record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "qpzOwFTqsBhsQrmz",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search records": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "23e58658-3cae-4a10-b06b-c3fdef1a121d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "780088bc3c85c24431cefbee01ff7615e134301b08b5665be7c2dd214889ba6a"
+  },
+  "nodeGroups": [],
+  "id": "9mMYslDSrktd7ShE",
+  "tags": []
+}

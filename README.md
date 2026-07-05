@@ -109,7 +109,7 @@ Detects when a ticket is marked as **Closed** and automatically sends a confirma
 # 🎥 Demo Video
 
 Demo Video Link:
-*(Add your Google Drive or YouTube link here.)*
+https://youtu.be/KTfKKCy9Q44
 
 ---
 
